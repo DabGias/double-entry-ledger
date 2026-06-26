@@ -20,8 +20,16 @@ type account struct {
 	Name string `json:"name"`
 }
 
+func (a *account) Add(amount float64)  {
+	a.Balance += amount
+}
+
+func (a *account) Subtract(amount float64)  {
+	a.Balance -= amount
+}
+
 func (a account) String() string {
-	return fmt.Sprintf("{ id: %s, name: %s, balance: %f, direction: %s }", a.Id.String(), a.Name, a.Balance, a.Direction)
+	return fmt.Sprintf("{ \"id\": \"%s\", \"name\": \"%s\", \"balance\": %f, \"direction\": \"%s\" }", a.Id.String(), a.Name, a.Balance, a.Direction)
 }
 
 func newAccount(data []byte) (account, error) {
@@ -44,20 +52,31 @@ func newAccount(data []byte) (account, error) {
 	if acc.Direction == "" {
 		return account{}, errors.New("Account direction is required to create an account!")
 	} else if _, ok := DIRECTIONS[acc.Direction]; !ok {
-		return account{}, fmt.Errorf("Account direction '%s' is invalid!", acc.Direction)
+		return account{}, fmt.Errorf("Account direction \"%s\" is invalid!", acc.Direction)
 	}
 
 	return acc, nil
 }
 
+func findAccount(accId uuid.UUID, accounts []*account) (*account, error) {
+	for _, acc := range accounts {
+		if acc.Id == accId {
+			return acc, nil
+		}
+	}
+
+	return &account{}, fmt.Errorf("Account with ID \"%s\" not found!", accId)
+}
+
 type entry struct {
 	Id uuid.UUID `json:"id"`
+	AccountId uuid.UUID `json:"account_id"`
 	Direction string `json:"direction"`
 	Amount float64 `json:"amount"`
 }
 
 func (e entry) String() string {
-	return fmt.Sprintf("{ id: %s, direction: %s, amount: %f }", e.Id.String(), e.Direction, e.Amount)
+	return fmt.Sprintf("{ \"id\": \"%s\", \"account_id\": \"%s\", \"direction\": \"%s\", \"amount\": %f }", e.Id.String(), e.AccountId, e.Direction, e.Amount)
 }
 
 func newEntry(data []byte) (entry, error) {
@@ -69,6 +88,10 @@ func newEntry(data []byte) (entry, error) {
 		return entry{}, err
 	}
 
+	if ent.AccountId == uuid.Nil {
+		return entry{}, errors.New("Account ID must not be null!")
+	}
+
 	if ent.Id == uuid.Nil {
 		ent.Id, err = uuid.NewRandom()
 
@@ -78,13 +101,13 @@ func newEntry(data []byte) (entry, error) {
 	}
 
 	if ent.Amount <= 0 {
-		return entry{}, errors.New("Entry amount must be greater than USD$0.00")
+		return entry{}, errors.New("Entry amount must be greater than 0!")
 	}
 
 	if ent.Direction == "" {
 		return entry{}, errors.New("Entry direction is required to create an entry!")
 	} else if _, ok := DIRECTIONS[ent.Direction]; !ok {
-		return entry{}, fmt.Errorf("Entry direction '%s' is invalid!", ent.Direction)
+		return entry{}, fmt.Errorf("Entry direction \"%s\" is invalid!", ent.Direction)
 	}
 
 	return ent, nil
@@ -94,6 +117,10 @@ type transaction struct {
 	Id uuid.UUID `json:"id"`
 	Name string `json:"name"`
 	Entries []entry `json:"entries"`
+}
+
+func (t transaction) String() string {
+	return fmt.Sprintf("{ \"id\": \"%s\", \"name\": \"%s\", \"entries\": %v }", t.Id.String(), t.Name, t.Entries)
 }
 
 func newTransaction(data []byte) (transaction, error) {
