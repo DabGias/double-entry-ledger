@@ -11,7 +11,7 @@ import (
 
 func main() {
 	accounts := []*account{}
-	transactions := []*transaction{}
+	transactions := []transaction{}
 
 	mux := http.NewServeMux()
 
@@ -104,7 +104,7 @@ func main() {
 					fmt.Printf("Account After: %s\n", acc)
 				}
 
-				transactions = append(transactions, &trnsc)
+				transactions = append(transactions, trnsc)
 
 				fmt.Fprintf(w, "{ \"transaction\": \"%s\", \"status\": %d }", trnsc, http.StatusCreated)
 		}
