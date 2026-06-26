@@ -96,9 +96,9 @@ func main() {
 					fmt.Printf("Account Before: %s\n", acc)
 
 					if acc.Direction == ent.Direction {
-						acc.Add(ent.Amount)
+						acc.Balance += ent.Amount
 					} else {
-						acc.Subtract(ent.Amount)
+						acc.Balance -= ent.Amount
 					}	
 
 					fmt.Printf("Account After: %s\n", acc)

@@ -20,14 +20,6 @@ type account struct {
 	Name string `json:"name"`
 }
 
-func (a *account) Add(amount float64)  {
-	a.Balance += amount
-}
-
-func (a *account) Subtract(amount float64)  {
-	a.Balance -= amount
-}
-
 func (a account) String() string {
 	return fmt.Sprintf("{ \"id\": \"%s\", \"name\": \"%s\", \"balance\": %f, \"direction\": \"%s\" }", a.Id.String(), a.Name, a.Balance, a.Direction)
 }
