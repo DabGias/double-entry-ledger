@@ -18,27 +18,27 @@ func main() {
 	mux.HandleFunc("/accounts", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 			case "GET":
-				fmt.Fprintf(w, "{ \"accounts\": %v }", accounts)
+				fmt.Fprintf(w, "{ \"accounts\": %v }\n", accounts)
 			case "POST":
 				defer r.Body.Close()
 
 				data, err := io.ReadAll(r.Body)
 
 				if err != nil {
-					fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }", err, http.StatusBadRequest)
+					fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }\n", err, http.StatusBadRequest)
 					return
 				}
 
 				acc, err := newAccount(data)
 
 				if err != nil {
-					fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }", err, http.StatusBadRequest)
+					fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }\n", err, http.StatusBadRequest)
 					return
 				}
 
 				accounts = append(accounts, &acc)
 
-				fmt.Fprintf(w, "{ \"account\": \"%s\", \"status\": %d }", acc, http.StatusCreated)
+				fmt.Fprintf(w, "{ \"account\": \"%s\", \"status\": %d }\n", acc, http.StatusCreated)
 		}
 	})
 
@@ -48,39 +48,39 @@ func main() {
 				accountId, err := uuid.Parse(r.PathValue("id"))
 
 				if err != nil {
-					fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }", err, http.StatusBadRequest)
+					fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }\n", err, http.StatusBadRequest)
 					return
 				}
 
 				for _, acc := range accounts {
 					if acc.Id == accountId {
-						fmt.Fprintf(w, "{ \"account\": \"%s\", \"status\": %d }", acc, http.StatusOK)
+						fmt.Fprintf(w, "{ \"account\": \"%s\", \"status\": %d }\n", acc, http.StatusOK)
 						return
 					}
 				}
 
-				fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }", "Account not found!", http.StatusNotFound)
+				fmt.Fprintf(w, "{ \"error\": \"Account not found!\", \"status\": %d }\n", http.StatusNotFound)
 		}
 	})
 
 	mux.HandleFunc("/transactions", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 			case "GET":
-				fmt.Fprintf(w, "{ \"transactions\": %v }", transactions)
+				fmt.Fprintf(w, "{ \"transactions\": %v }\n", transactions)
 			case "POST":
 				defer r.Body.Close()
 
 				data, err := io.ReadAll(r.Body)
 
 				if err != nil {
-					fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }", err, http.StatusBadRequest)
+					fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }\n", err, http.StatusBadRequest)
 					return
 				}
 
 				trnsc, err := newTransaction(data)
 
 				if err != nil {
-					fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }", err, http.StatusBadRequest)
+					fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }\n", err, http.StatusBadRequest)
 					return
 				}
 
@@ -88,25 +88,20 @@ func main() {
 					acc, err := findAccount(ent.AccountId, accounts)
 
 					if err != nil {
-						fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }", err, http.StatusBadRequest)
+						fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }\n", err, http.StatusBadRequest)
 						return
 					}
 
-					fmt.Printf("Entry: %s\n", ent)
-					fmt.Printf("Account Before: %s\n", acc)
-
 					if acc.Direction == ent.Direction {
-						acc.Balance += ent.Amount
+						acc.Balance.Cents += ent.Amount.Cents
 					} else {
-						acc.Balance -= ent.Amount
-					}	
-
-					fmt.Printf("Account After: %s\n", acc)
+						acc.Balance.Cents -= ent.Amount.Cents
+					}
 				}
 
 				transactions = append(transactions, trnsc)
 
-				fmt.Fprintf(w, "{ \"transaction\": \"%s\", \"status\": %d }", trnsc, http.StatusCreated)
+				fmt.Fprintf(w, "{ \"transaction\": \"%s\", \"status\": %d }\n", trnsc, http.StatusCreated)
 		}
 	})
 
@@ -116,18 +111,18 @@ func main() {
 				trnscId, err := uuid.Parse(r.PathValue("id"))
 
 				if err != nil {
-					fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }", err, http.StatusBadRequest)
+					fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }\n", err, http.StatusBadRequest)
 					return
 				}
 
 				for _, t := range transactions {
 					if t.Id == trnscId {
-						fmt.Fprintf(w, "{ \"transaction\": \"%s\", \"status\": %d }", t, http.StatusOK)
+						fmt.Fprintf(w, "{ \"transaction\": \"%s\", \"status\": %d }\n", t, http.StatusOK)
 						return
 					}
 				}
 
-				fmt.Fprintf(w, "{ \"error\": \"%s\", \"status\": %d }", "Transaction not found!", http.StatusNotFound)
+				fmt.Fprintf(w, "{ \"error\": \"Transaction not found!\", \"status\": %d }\n", http.StatusNotFound)
 		}
 	})
 
